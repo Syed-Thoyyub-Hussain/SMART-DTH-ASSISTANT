@@ -1,0 +1,95 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User account detail and DTH role association.",
+      "type": "object",
+      "properties": {
+        "role": { "type": "string", "enum": ["customer", "admin"] },
+        "name": { "type": "string" },
+        "identifier": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "address": { "type": "string" },
+        "smartCardNumber": { "type": "string" },
+        "planName": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "activeStatus": { "type": "string" }
+      },
+      "required": ["role", "name", "identifier", "email"]
+    },
+    "ServiceRequest": {
+      "title": "Service Request",
+      "description": "Technician and service booking requests.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "type": { "type": "string" },
+        "address": { "type": "string" },
+        "technician": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "In Progress", "Standby", "Completed", "Approved", "Declined"] },
+        "phone": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerId": { "type": "string" },
+        "cost": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "appointmentSlot": { "type": "string" }
+      },
+      "required": ["userId", "type", "address", "status", "customerId"]
+    },
+    "BillingClearance": {
+      "title": "Billing Clearance",
+      "description": "DTH financial balance and clearance ledger record.",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "outstandingBalance": { "type": "number" },
+        "packRental": { "type": "number" },
+        "equipmentFee": { "type": "number" },
+        "installFee": { "type": "number" },
+        "status": { "type": "string" },
+        "smartCardNumber": { "type": "string" },
+        "phone": { "type": "string" },
+        "userId": { "type": "string" },
+        "lastUpdated": { "type": "string" },
+        "utrNumber": { "type": "string" }
+      },
+      "required": ["customerId", "customerName", "outstandingBalance", "status", "userId"]
+    },
+    "SentEmail": {
+      "title": "Sent Email",
+      "description": "Audit record of welcome and notification emails.",
+      "type": "object",
+      "properties": {
+        "to": { "type": "string" },
+        "subject": { "type": "string" },
+        "htmlBody": { "type": "string" },
+        "customerName": { "type": "string" },
+        "sentAt": { "type": "string" },
+        "status": { "type": "string" },
+        "errorDetails": { "type": "string" },
+        "smsFallback": { "type": "string" }
+      },
+      "required": ["to", "subject", "htmlBody", "sentAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profile collection indexed by unique user ID."
+    },
+    "requests/{requestId}": {
+      "schema": "ServiceRequest",
+      "description": "Collection of maintenance and service request tickets."
+    },
+    "clearances/{subId}": {
+      "schema": "BillingClearance",
+      "description": "Financial ledger accounts indexed by unique subscriber registration ID."
+    },
+    "sent_emails/{emailId}": {
+      "schema": "SentEmail",
+      "description": "Email dispatch logging and audit records."
+    }
+  }
+}

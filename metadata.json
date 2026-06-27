@@ -1,0 +1,6 @@
+{
+  "name": "Raja Communications",
+  "description": "Premium DTH & Utility Services Dashboard with live tracking, custom recharge packs, and interactive operations status.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
