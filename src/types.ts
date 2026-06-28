@@ -19,6 +19,7 @@ export interface ServiceRequest {
   cost?: number;
   createdAt?: string;
   appointmentSlot?: string;
+  userId?: string;
 }
 
 export interface InventoryStat {
@@ -54,4 +55,5 @@ export interface BillingClearance {
   packRental: number;
   status: 'Pending' | 'Cleared' | 'Pending Verification' | string;
   utrNumber?: string;
+  userId?: string;
 }

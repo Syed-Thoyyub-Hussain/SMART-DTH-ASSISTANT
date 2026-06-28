@@ -2,92 +2,53 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Default deny catch-all
+    // Default deny catch-all: reject everything unless explicitly allowed below
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Check if the user is the authenticated admin (raja.sundirect@gmail.com)
+    // Admin check: only raja.sundirect@gmail.com has global access
     function isAdmin() {
-      return request.auth != null && (request.auth.token.email == 'raja.sundirect@gmail.com');
+      return request.auth != null && request.auth.token.email == 'raja.sundirect@gmail.com';
     }
 
-    // Helper: is owner of userId
+    // Ownership check: the requesting user's Firebase UID must match the document's userId
     function isOwner(userId) {
       return request.auth != null && request.auth.uid == userId;
     }
 
+    // Users collection: each user's profile is keyed by their Firebase auth UID
     match /users/{userId} {
-      // Allow read/get if admin, owner, or if unauthenticated but it is a local-user fallback path
-      allow read: if isAdmin() || isOwner(userId) || userId.startsWith('local-user-');
-      
-      // Allow create/set if admin, or the owner is creating their own user profile (cannot self-assign role: 'admin' unless they are raja.sundirect@gmail.com)
-      allow create: if isAdmin() || (
-        (isOwner(userId) || userId.startsWith('local-user-')) && 
-        (request.resource.data.role == 'customer')
-      );
-
-      // Allow update if admin, or owner is updating non-role properties
-      allow update: if isAdmin() || (
-        (isOwner(userId) || userId.startsWith('local-user-')) && 
-        (!('role' in request.resource.data) || request.resource.data.role == resource.data.role)
-      );
-
+      allow read: if isAdmin() || isOwner(userId);
+      allow create: if isAdmin() || (isOwner(userId) && request.resource.data.role == 'customer');
+      allow update: if isAdmin() || (isOwner(userId) && (!('role' in request.resource.data) || request.resource.data.role == resource.data.role));
       allow delete: if isAdmin();
     }
 
+    // Service requests: each request stores userId = request.auth.uid for ownership
     match /requests/{requestId} {
-      // Standard list/query checks: enforce filtering on the client side
       allow list: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
-
-      // Get individual ticket
-      allow get: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid) || resource.data.userId.startsWith('local-user-');
-
-      // Create service requests: standard users can create requests for themselves (and local previews)
-      allow create: if isAdmin() || (
-        (request.auth != null && request.resource.data.userId == request.auth.uid) || 
-        request.resource.data.userId.startsWith('local-user-')
-      );
-
-      // Update service requests
-      allow update: if isAdmin() || (
-        request.auth != null && resource.data.userId == request.auth.uid && 
-        request.resource.data.userId == resource.data.userId
-      );
-
+      allow get: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
+      allow create: if isAdmin() || (request.auth != null && request.resource.data.userId == request.auth.uid);
+      allow update: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid && request.resource.data.userId == resource.data.userId);
       allow delete: if isAdmin();
     }
 
+    // Billing clearances: each clearance stores userId = request.auth.uid for ownership
     match /clearances/{subId} {
-      // List clearances
       allow list: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
-
-      // Get clearance
-      allow get: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid) || subId.startsWith('local-user-') || resource.data.userId.startsWith('local-user-');
-
-      // Create clearances (during signup)
-      allow create: if isAdmin() || (
-        (request.auth != null && request.resource.data.userId == request.auth.uid) || 
-        request.resource.data.userId.startsWith('local-user-')
-      );
-
-      // Update clearances (submitting payment UTR number)
-      allow update: if isAdmin() || (
-        (request.auth != null && resource.data.userId == request.auth.uid) || 
-        resource.data.userId.startsWith('local-user-')
-      );
-
+      allow get: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
+      allow create: if isAdmin() || (request.auth != null && request.resource.data.userId == request.auth.uid);
+      allow update: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
       allow delete: if isAdmin();
     }
 
+    // Sent emails: keyed by user UID for audit
     match /sent_emails/{emailId} {
-      // List is restricted to admin
       allow list: if isAdmin();
-
-      // Individual actions
-      allow get: if isAdmin() || (request.auth != null && emailId == request.auth.uid) || emailId.startsWith('local-user-');
-      allow create: if isAdmin() || (request.auth != null && emailId == request.auth.uid) || emailId.startsWith('local-user-');
-      allow update: if isAdmin() || (request.auth != null && emailId == request.auth.uid) || emailId.startsWith('local-user-');
+      allow get: if isAdmin() || (request.auth != null && emailId == request.auth.uid);
+      allow create: if isAdmin() || (request.auth != null && emailId == request.auth.uid);
+      allow update: if isAdmin() || (request.auth != null && emailId == request.auth.uid);
       allow delete: if isAdmin();
     }
   }

@@ -11,7 +11,7 @@ import LoginView from './components/LoginView';
 import ProfileView from './components/ProfileView';
 import CinematicIntro from './components/CinematicIntro';
 import { ActiveView, ServiceRequest, UserSession, InventoryStat, BillingClearance } from './types';
-import { LogOut, AlertTriangle } from 'lucide-react';
+import { LogOut, TriangleAlert as AlertTriangle } from 'lucide-react';
 
 // Real database connectivity
 import { auth, db } from './lib/firebase';
@@ -81,7 +81,7 @@ export default function App() {
         // Retrieve custom subscriber details or manager role credentials from Firestore
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         const userSnap = await getDoc(userDocRef);
-        
+
         if (userSnap.exists()) {
           const docData = userSnap.data();
           const restored = {
@@ -101,28 +101,23 @@ export default function App() {
           localStorage.setItem('sun_direct_fallback_session', JSON.stringify(restored));
         }
       } else {
-        // Look for fallback session stored locally
-        const cached = localStorage.getItem('sun_direct_fallback_session');
-        if (cached) {
-          try {
-            setSession(JSON.parse(cached));
-          } catch (e) {
-            setSession({
-              isLoggedIn: false,
-              role: null,
-              name: '',
-              identifier: ''
-            });
-          }
-        } else {
-          // Settle clean offline fallback state
-          setSession({
-            isLoggedIn: false,
-            role: null,
-            name: '',
-            identifier: ''
-          });
-        }
+        // Firebase auth is null: user signed out or session expired
+        // Clear local cache and reset to logged-out state
+        localStorage.removeItem('sun_direct_fallback_session');
+        setSession({
+          isLoggedIn: false,
+          role: null,
+          name: '',
+          identifier: '',
+          phone: '',
+          email: '',
+          address: '',
+          smartCardNumber: '',
+          planName: '',
+          activeStatus: 'Active'
+        });
+        setCurrentView('login');
+        window.location.hash = '#login';
       }
     });
 
@@ -214,16 +209,29 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.warn('Sign out error:', err);
+    }
     localStorage.removeItem('sun_direct_fallback_session');
     setSession({
       isLoggedIn: false,
       role: null,
       name: '',
-      identifier: ''
+      identifier: '',
+      phone: '',
+      email: '',
+      address: '',
+      smartCardNumber: '',
+      planName: '',
+      activeStatus: 'Active'
     });
+    setRequests([]);
+    setClearances([]);
     handleAlert('Logged out from DTH Gateway successfully.', 'warn');
     setCurrentView('login');
+    window.location.hash = '#login';
     setShowLogoutConfirm(false);
   };
 
