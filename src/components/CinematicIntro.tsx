@@ -1,19 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Tv, 
-  Wifi, 
-  FileText, 
-  Play, 
-  ArrowRight, 
-  Sparkles, 
-  CheckCircle2, 
-  Database,
-  Globe2,
-  Signal,
-  CreditCard,
-  Zap
-} from 'lucide-react';
+import { Tv, Wifi, FileText, Play, ArrowRight, Sparkles, CircleCheck as CheckCircle2, Database, Globe as Globe2, Signal, CreditCard, Zap } from 'lucide-react';
 
 interface CinematicIntroProps {
   onEnter: () => void;
@@ -92,8 +79,8 @@ export default function CinematicIntro({ onEnter }: CinematicIntroProps) {
             </div>
           </div>
           <div>
-            <h1 className="text-xs font-black tracking-[0.3em] text-white">RAJA SUN COMMS</h1>
-            <p className="text-[8px] uppercase tracking-wider text-[#FF5500] font-mono leading-none">Global Broadcast Node</p>
+            <h1 className="text-xs font-black tracking-[0.3em] text-white">RAJA COMMUNICATIONS</h1>
+            <p className="text-[8px] uppercase tracking-wider text-[#FF5500] font-mono leading-none">Authorized Sun Direct Distributor</p>
           </div>
         </div>
 

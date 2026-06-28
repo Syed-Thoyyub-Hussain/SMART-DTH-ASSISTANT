@@ -141,6 +141,10 @@ export default function LoginView({ onLogin }: LoginViewProps) {
     setErrorMsg(null);
     setSuccessMsg(null);
     try {
+      // Check if Google provider is available
+      if (!auth.app.options.apiKey) {
+        throw new Error('Google sign-in is not configured. Please use email and password.');
+      }
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
       const result = await signInWithPopup(auth, provider);
@@ -324,12 +328,12 @@ export default function LoginView({ onLogin }: LoginViewProps) {
           <Tv size={24} />
         </div>
         <h2 className="font-display text-2xl md:text-3xl text-white font-bold tracking-tight">
-          {mode === 'forgot' ? 'Reset Password' : 'Sun Direct Hub Gate'}
+          {mode === 'forgot' ? 'Reset Password' : 'RAJA COMMUNICATIONS'}
         </h2>
         <p className="text-xs text-on-surface-variant max-w-sm mx-auto">
           {mode === 'forgot'
             ? 'Enter your email and we will send you a password reset link.'
-            : 'Secure subscriber portal. Register, manage sessions, and access your account.'}
+            : 'Authorized Sun Direct Distributor Portal. Register, manage sessions, and access your account.'}
         </p>
       </div>
 
@@ -585,6 +589,9 @@ export default function LoginView({ onLogin }: LoginViewProps) {
               <Chrome size={14} className="text-[#FF5500]" />
               <span>Continue with Google</span>
             </button>
+            <p className="text-[10px] text-zinc-500 text-center">
+              If Google sign-in fails, please use Email & Password instead.
+            </p>
           </div>
         )}
 
@@ -593,7 +600,7 @@ export default function LoginView({ onLogin }: LoginViewProps) {
           <div className="flex gap-2.5 bg-white/[0.02] border border-white/5 rounded-xl p-3 text-[11px] text-zinc-400">
             <Info size={14} className="text-[#FF5500] shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="font-semibold text-white">Security & Roles Protocol</p>
+              <p className="font-semibold text-white">Security & Data Protection</p>
               {mode === 'signin' ? (
                 <p className="leading-relaxed">
                   Your data is securely stored under your unique Firebase UID. Each user can only access their own documents.
@@ -604,7 +611,7 @@ export default function LoginView({ onLogin }: LoginViewProps) {
                 </p>
               ) : (
                 <p className="leading-relaxed">
-                  Registering creates your subscriber profile under your Firebase UID. All data is isolated and protected by Firestore security rules.
+                  Registering creates your customer profile under your Firebase UID. All data is isolated and protected by Firestore security rules.
                 </p>
               )}
             </div>
