@@ -217,7 +217,11 @@ export default function LoginView({ onLogin }: LoginViewProps) {
       localStorage.setItem('sun_direct_fallback_session', JSON.stringify(sessionObj));
       onLogin(sessionObj);
     } catch (err: any) {
-      setErrorMsg(friendlyAuthError(err.code));
+      if (err.code === 'auth/operation-not-allowed') {
+        setErrorMsg('Google sign-in is not enabled. Please use Email & Password instead.');
+      } else {
+        setErrorMsg(friendlyAuthError(err.code));
+      }
     } finally {
       setLoading(false);
     }
