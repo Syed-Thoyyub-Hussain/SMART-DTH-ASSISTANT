@@ -84,9 +84,11 @@ export default function App() {
 
         if (userSnap.exists()) {
           const docData = userSnap.data();
+          const emailLower = (docData.email || firebaseUser.email || '').toLowerCase();
+          const isAdmin = docData.role === 'admin' || emailLower === 'thoyyub76@gmail.com' || emailLower === 'raja.sundirect@gmail.com';
           const restored = {
             isLoggedIn: true,
-            role: docData.role as 'customer' | 'admin',
+            role: isAdmin ? 'admin' : 'customer' as 'customer' | 'admin',
             name: docData.name || '',
             identifier: docData.identifier || '',
             phone: docData.phone || '',

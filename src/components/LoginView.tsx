@@ -155,7 +155,7 @@ export default function LoginView({ onLogin }: LoginViewProps) {
       }
 
       const emailLower = user.email.trim().toLowerCase();
-      const isReservedAdmin = emailLower === 'raja.sundirect@gmail.com';
+      const isReservedAdmin = emailLower === 'raja.sundirect@gmail.com' || emailLower === 'thoyyub76@gmail.com';
       const userDocRef = doc(db, 'users', user.uid);
       const userSnap = await getDoc(userDocRef);
 
@@ -245,7 +245,7 @@ export default function LoginView({ onLogin }: LoginViewProps) {
 
     const emailLower = signUpEmail.trim().toLowerCase();
 
-    if (emailLower === 'raja.sundirect@gmail.com') {
+    if (emailLower === 'raja.sundirect@gmail.com' || emailLower === 'thoyyub76@gmail.com') {
       setErrorMsg('This administrator email is reserved. Please use a different email.');
       setLoading(false);
       return;
