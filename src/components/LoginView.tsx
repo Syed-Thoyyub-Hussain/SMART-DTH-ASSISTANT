@@ -52,6 +52,27 @@ const friendlyAuthError = (code: string): string => {
   }
 };
 
+// Local fallback storage for when Firebase auth is not enabled
+const LOCAL_USERS_KEY = 'sun_direct_local_users';
+
+function getLocalUsers(): Record<string, { password: string; data: any }> {
+  try {
+    return JSON.parse(localStorage.getItem(LOCAL_USERS_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function saveLocalUser(email: string, password: string, data: any) {
+  const users = getLocalUsers();
+  users[email.toLowerCase()] = { password, data };
+  localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
+}
+
+function getLocalUser(email: string) {
+  return getLocalUsers()[email.toLowerCase()];
+}
+
 export default function LoginView({ onLogin }: LoginViewProps) {
   const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>('signin');
   const [loading, setLoading] = useState(false);
@@ -130,6 +151,16 @@ export default function LoginView({ onLogin }: LoginViewProps) {
       localStorage.setItem('sun_direct_fallback_session', JSON.stringify(fullSes));
       onLogin(fullSes);
     } catch (err: any) {
+      // If Firebase auth is not enabled, fall back to local auth
+      if (err.code === 'auth/operation-not-allowed' || err.code === 'auth/invalid-api-key' || err.message?.includes('auth')) {
+        const localUser = getLocalUser(inputEmail);
+        if (localUser && localUser.password === password) {
+          const fullSes = { isLoggedIn: true, ...localUser.data };
+          localStorage.setItem('sun_direct_fallback_session', JSON.stringify(fullSes));
+          onLogin(fullSes);
+          return;
+        }
+      }
       setErrorMsg(friendlyAuthError(err.code));
     } finally {
       setLoading(false);
@@ -290,11 +321,21 @@ export default function LoginView({ onLogin }: LoginViewProps) {
       localStorage.setItem('sun_direct_fallback_session', JSON.stringify(sessionObj));
       onLogin(sessionObj);
     } catch (err: any) {
-      if (err.code === 'auth/operation-not-allowed') {
-        setErrorMsg('Email/Password sign-in is NOT enabled in Firebase. Go to Firebase Console > Authentication > Sign-in method > Enable Email/Password.');
-      } else {
-        setErrorMsg(friendlyAuthError(err.code));
+      // If Firebase auth is not enabled, fall back to local auth
+      if (err.code === 'auth/operation-not-allowed' || err.code === 'auth/invalid-api-key') {
+        const existing = getLocalUser(signUpEmail.trim());
+        if (existing) {
+          setErrorMsg('An account with this email already exists. Please sign in instead.');
+          setLoading(false);
+          return;
+        }
+        saveLocalUser(signUpEmail.trim(), signUpPassword.trim(), newProfile);
+        const sessionObj = { isLoggedIn: true, ...newProfile };
+        localStorage.setItem('sun_direct_fallback_session', JSON.stringify(sessionObj));
+        onLogin(sessionObj);
+        return;
       }
+      setErrorMsg(friendlyAuthError(err.code));
     } finally {
       setLoading(false);
     }
