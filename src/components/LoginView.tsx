@@ -44,7 +44,7 @@ const friendlyAuthError = (code: string): string => {
     case 'auth/network-request-failed':
       return 'Network error. Please check your internet connection.';
     case 'auth/operation-not-allowed':
-      return 'This sign-in method is not enabled. Contact the administrator.';
+      return 'Email/Password sign-in is NOT enabled in Firebase. Go to Firebase Console > Authentication > Sign-in method > Enable Email/Password.';
     case 'auth/popup-closed-by-user':
       return 'Google sign-in was cancelled. Please try again.';
     default:
@@ -290,7 +290,11 @@ export default function LoginView({ onLogin }: LoginViewProps) {
       localStorage.setItem('sun_direct_fallback_session', JSON.stringify(sessionObj));
       onLogin(sessionObj);
     } catch (err: any) {
-      setErrorMsg(friendlyAuthError(err.code));
+      if (err.code === 'auth/operation-not-allowed') {
+        setErrorMsg('Email/Password sign-in is NOT enabled in Firebase. Go to Firebase Console > Authentication > Sign-in method > Enable Email/Password.');
+      } else {
+        setErrorMsg(friendlyAuthError(err.code));
+      }
     } finally {
       setLoading(false);
     }
